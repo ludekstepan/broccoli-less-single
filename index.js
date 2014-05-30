@@ -27,6 +27,27 @@ function LessCompiler (sourceTrees, inputFile, outputFile, options) {
   this.cached = undefined;
 }
 
+function formatLessError(e) {
+  var realFile = e.filename.split('.tmp/')[1];
+  var stack = ''
+  e.message = e.message + ' in ' + realFile + ' on line ' + e.line + ', column ' + (e.column + 1);
+  if (typeof(e.extract[0]) === 'string') {
+      stack += (e.line - 1) + ' ' + e.extract[0] + '\n';
+  }
+
+  if (typeof(e.extract[1]) === 'string') {
+      stack += e.line + ' ' + e.extract[1] + '\n';
+      stack += ' '.repeat(e.column + 3) + '^\n';
+  }
+
+  if (typeof(e.extract[2]) === 'string') {
+      stack += (e.line + 1) + ' ' + e.extract[2] + '\n';
+  }
+  e.stack = stack;
+
+  return e;
+}
+
 LessCompiler.prototype.write = function (readTree, destDir) {
   var self = this;
 
@@ -75,15 +96,20 @@ LessCompiler.prototype.write = function (readTree, destDir) {
       var promise = new RSVP.Promise(function(resolve, reject) {
         parser.parse(data, function (e, tree) {
           if (e) {
-            less.writeError(e, lessOptions);
-            reject(e);
+            reject(formatLessError(e));
+          } else{
+            try {
+              var css = tree.toCSS(lessOptions);
+              fs.writeFileSync(destFile, css, { encoding: 'utf8' });
+
+              self.cached = css;
+
+              resolve(self.tmpDestDir);
+            } catch (e) {
+              reject(formatLessError(e));
+            }
+
           }
-          var css = tree.toCSS(lessOptions);
-          fs.writeFileSync(destFile, css, { encoding: 'utf8' });
-
-          self.cached = css;
-
-          resolve(self.tmpDestDir);
         });
       });
 
