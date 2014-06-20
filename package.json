@@ -29,10 +29,10 @@
     "quick-temp": "^0.1.0",
     "promise-map-series": "^0.2.0",
     "include-path-searcher": "^0.1.0",
-    "less": "~1.6.3",
+    "less": "~1.7.2",
     "rsvp": "~3.0.6",
     "broccoli-writer": "^0.1.1",
-    "broccoli-kitchen-sink-helpers": "^0.1.1"
+    "broccoli-kitchen-sink-helpers": "^0.2.2"
   },
   "readmeFilename": "README.md",
   "bugs": {
